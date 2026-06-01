@@ -1,18 +1,23 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 import Loader from "../components/Loader";
+import { getApiError } from "../utils/apiError";
+
+const emptyForm = {
+  full_name: "",
+  email: "",
+  phone: "",
+};
 
 function Customers() {
 
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [listLoading, setListLoading] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
-  const [formData, setFormData] = useState({
-    full_name: "",
-    email: "",
-    phone: ""
-  });
+  const [formData, setFormData] = useState(emptyForm);
 
   const fetchCustomers = async (isRefresh = false) => {
 
@@ -29,7 +34,7 @@ function Customers() {
       setCustomers(response.data);
 
     } catch (error) {
-      console.log(error);
+      alert(getApiError(error, "Failed to load customers."));
     } finally {
       setLoading(false);
       setListLoading(false);
@@ -40,54 +45,94 @@ function Customers() {
     fetchCustomers();
   }, []);
 
+  const resetForm = () => {
+    setEditingId(null);
+    setFormData(emptyForm);
+  };
+
   const handleChange = (e) => {
 
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
-  const handleSubmit = async (e) => {
-
-    e.preventDefault();
-
+  const buildPayload = () => {
     const full_name = formData.full_name.trim();
     const email = formData.email.trim();
     const phone = formData.phone.trim();
 
     if (!full_name || !email || !phone) {
       alert("Please fill in all required fields.");
-      return;
+      return null;
     }
+
+    return { full_name, email, phone };
+  };
+
+  const handleSubmit = async (e) => {
+
+    e.preventDefault();
+
+    const payload = buildPayload();
+    if (!payload) return;
+
+    setFormLoading(true);
 
     try {
 
-      await api.post("/customers/", { full_name, email, phone });
+      if (editingId) {
+        await api.put(`/customers/${editingId}`, payload);
+      } else {
+        await api.post("/customers/", payload);
+      }
 
-      setFormData({
-        full_name: "",
-        email: "",
-        phone: ""
-      });
-
+      resetForm();
       fetchCustomers(true);
 
     } catch (error) {
-      alert(error.response.data.detail);
+      alert(getApiError(error));
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  const startEdit = async (id) => {
+    setFormLoading(true);
+
+    try {
+      const response = await api.get(`/customers/${id}`);
+      const customer = response.data;
+
+      setEditingId(customer.id);
+      setFormData({
+        full_name: customer.full_name,
+        email: customer.email,
+        phone: customer.phone,
+      });
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (error) {
+      alert(getApiError(error, "Customer not found."));
+    } finally {
+      setFormLoading(false);
     }
   };
 
   const deleteCustomer = async (id) => {
 
+    if (!window.confirm("Delete this customer?")) return;
+
     try {
 
       await api.delete(`/customers/${id}`);
 
+      if (editingId === id) resetForm();
       fetchCustomers(true);
 
     } catch (error) {
-      console.log(error);
+      alert(getApiError(error, "Failed to delete customer."));
     }
   };
 
@@ -109,64 +154,87 @@ function Customers() {
 
       <section className="panel">
         <div className="panel-header">
-          <h2 className="panel-title">Add customer</h2>
+          <h2 className="panel-title">
+            {editingId ? `Edit customer #${editingId}` : "Add customer"}
+          </h2>
         </div>
         <div className="panel-body">
-          <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div>
-              <label className="field-label" htmlFor="full_name">
-                Full name <span className="text-red-400" aria-hidden="true">*</span>
-              </label>
-              <input
-                id="full_name"
-                className="input"
-                type="text"
-                name="full_name"
-                placeholder="Jane Doe"
-                value={formData.full_name}
-                onChange={handleChange}
-                required
-              />
-            </div>
+          {formLoading && editingId === null ? (
+            <Loader message="Loading customer details..." />
+          ) : (
+            <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div>
+                <label className="field-label" htmlFor="full_name">
+                  Full name <span className="text-red-400" aria-hidden="true">*</span>
+                </label>
+                <input
+                  id="full_name"
+                  className="input"
+                  type="text"
+                  name="full_name"
+                  placeholder="Jane Doe"
+                  value={formData.full_name}
+                  onChange={handleChange}
+                  required
+                  disabled={formLoading}
+                />
+              </div>
 
-            <div>
-              <label className="field-label" htmlFor="email">
-                Email <span className="text-red-400" aria-hidden="true">*</span>
-              </label>
-              <input
-                id="email"
-                className="input"
-                type="email"
-                name="email"
-                placeholder="jane@example.com"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
+              <div>
+                <label className="field-label" htmlFor="email">
+                  Email <span className="text-red-400" aria-hidden="true">*</span>
+                </label>
+                <input
+                  id="email"
+                  className="input"
+                  type="email"
+                  name="email"
+                  placeholder="jane@example.com"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  disabled={formLoading}
+                />
+              </div>
 
-            <div>
-              <label className="field-label" htmlFor="phone">
-                Phone <span className="text-red-400" aria-hidden="true">*</span>
-              </label>
-              <input
-                id="phone"
-                className="input"
-                type="tel"
-                name="phone"
-                placeholder="+91 98765 43210"
-                value={formData.phone}
-                onChange={handleChange}
-                required
-              />
-            </div>
+              <div>
+                <label className="field-label" htmlFor="phone">
+                  Phone <span className="text-red-400" aria-hidden="true">*</span>
+                </label>
+                <input
+                  id="phone"
+                  className="input"
+                  type="tel"
+                  name="phone"
+                  placeholder="+91 98765 43210"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required
+                  disabled={formLoading}
+                />
+              </div>
 
-            <div className="sm:col-span-2 lg:col-span-3">
-              <button type="submit" className="btn-primary">
-                Add customer
-              </button>
-            </div>
-          </form>
+              <div className="form-actions lg:col-span-3">
+                <button type="submit" className="btn-primary" disabled={formLoading}>
+                  {formLoading
+                    ? "Saving..."
+                    : editingId
+                      ? "Update customer"
+                      : "Add customer"}
+                </button>
+                {editingId && (
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={resetForm}
+                    disabled={formLoading}
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
+            </form>
+          )}
         </div>
       </section>
 
@@ -187,13 +255,22 @@ function Customers() {
                   <li key={customer.id} className="mobile-list-item">
                     <div className="mobile-list-row">
                       <p className="font-medium text-white break-words pr-2">{customer.full_name}</p>
-                      <button
-                        type="button"
-                        className="btn-danger shrink-0"
-                        onClick={() => deleteCustomer(customer.id)}
-                      >
-                        Delete
-                      </button>
+                      <div className="flex shrink-0 gap-2">
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          onClick={() => startEdit(customer.id)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-danger"
+                          onClick={() => deleteCustomer(customer.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                     <dl className="space-y-2 text-sm">
                       <div>
@@ -225,13 +302,22 @@ function Customers() {
                         <td>{customer.email}</td>
                         <td className="text-zinc-400">{customer.phone}</td>
                         <td className="text-right">
-                          <button
-                            type="button"
-                            className="btn-danger"
-                            onClick={() => deleteCustomer(customer.id)}
-                          >
-                            Delete
-                          </button>
+                          <div className="flex justify-end gap-2">
+                            <button
+                              type="button"
+                              className="btn-secondary"
+                              onClick={() => startEdit(customer.id)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-danger"
+                              onClick={() => deleteCustomer(customer.id)}
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}

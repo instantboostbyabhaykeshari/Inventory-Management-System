@@ -52,6 +52,39 @@ def get_customer(customer_id: int, db: Session = Depends(get_db)):
 
     return customer
 
+
+@router.put("/{customer_id}", response_model=CustomerResponse)
+def update_customer(
+    customer_id: int,
+    updated_customer: CustomerCreate,
+    db: Session = Depends(get_db),
+):
+
+    customer = db.query(Customer).filter(
+        Customer.id == customer_id
+    ).first()
+
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    existing_email = db.query(Customer).filter(
+        Customer.email == updated_customer.email,
+        Customer.id != customer_id,
+    ).first()
+
+    if existing_email:
+        raise HTTPException(status_code=400, detail="Email already exists")
+
+    customer.full_name = updated_customer.full_name
+    customer.email = updated_customer.email
+    customer.phone = updated_customer.phone
+
+    db.commit()
+    db.refresh(customer)
+
+    return customer
+
+
 @router.delete("/{customer_id}")
 def delete_customer(customer_id: int, db: Session = Depends(get_db)):
 

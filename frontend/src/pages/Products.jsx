@@ -1,19 +1,24 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 import Loader from "../components/Loader";
+import { getApiError } from "../utils/apiError";
+
+const emptyForm = {
+  name: "",
+  sku: "",
+  price: "",
+  quantity: "",
+};
 
 function Products() {
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [listLoading, setListLoading] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    sku: "",
-    price: "",
-    quantity: ""
-  });
+  const [formData, setFormData] = useState(emptyForm);
 
   const fetchProducts = async (isRefresh = false) => {
     if (isRefresh) {
@@ -26,7 +31,7 @@ function Products() {
       const response = await api.get("/products/");
       setProducts(response.data);
     } catch (error) {
-      console.log(error);
+      alert(getApiError(error, "Failed to load products."));
     } finally {
       setLoading(false);
       setListLoading(false);
@@ -37,16 +42,19 @@ function Products() {
     fetchProducts();
   }, []);
 
+  const resetForm = () => {
+    setEditingId(null);
+    setFormData(emptyForm);
+  };
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const buildPayload = () => {
     const name = formData.name.trim();
     const sku = formData.sku.trim();
     const price = Number(formData.price);
@@ -54,44 +62,73 @@ function Products() {
 
     if (!name || !sku || formData.price === "" || formData.quantity === "") {
       alert("Please fill in all required fields.");
-      return;
+      return null;
     }
 
     if (Number.isNaN(price) || price < 0 || Number.isNaN(quantity) || quantity < 0) {
       alert("Price and quantity must be valid numbers (0 or greater).");
-      return;
+      return null;
     }
 
+    return { name, sku, price, quantity };
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const payload = buildPayload();
+    if (!payload) return;
+
+    setFormLoading(true);
+
     try {
+      if (editingId) {
+        await api.put(`/products/${editingId}`, payload);
+      } else {
+        await api.post("/products/", payload);
+      }
 
-      await api.post("/products/", {
-        name,
-        sku,
-        price,
-        quantity
-      });
-
-      setFormData({
-        name: "",
-        sku: "",
-        price: "",
-        quantity: ""
-      });
-
+      resetForm();
       fetchProducts(true);
-
     } catch (error) {
-      alert(error.response.data.detail);
+      alert(getApiError(error));
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  const startEdit = async (id) => {
+    setFormLoading(true);
+
+    try {
+      const response = await api.get(`/products/${id}`);
+      const product = response.data;
+
+      setEditingId(product.id);
+      setFormData({
+        name: product.name,
+        sku: product.sku,
+        price: String(product.price),
+        quantity: String(product.quantity),
+      });
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (error) {
+      alert(getApiError(error, "Product not found."));
+    } finally {
+      setFormLoading(false);
     }
   };
 
   const deleteProduct = async (id) => {
+    if (!window.confirm("Delete this product?")) return;
 
     try {
       await api.delete(`/products/${id}`);
+      if (editingId === id) resetForm();
       fetchProducts(true);
     } catch (error) {
-      console.log(error);
+      alert(getApiError(error, "Failed to delete product."));
     }
   };
 
@@ -113,84 +150,108 @@ function Products() {
 
       <section className="panel">
         <div className="panel-header">
-          <h2 className="panel-title">Add product</h2>
+          <h2 className="panel-title">
+            {editingId ? `Edit product #${editingId}` : "Add product"}
+          </h2>
         </div>
         <div className="panel-body">
-          <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <label className="field-label" htmlFor="name">
-                Name <span className="text-red-400" aria-hidden="true">*</span>
-              </label>
-              <input
-                id="name"
-                className="input"
-                type="text"
-                name="name"
-                placeholder="Product name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-              />
-            </div>
+          {formLoading && editingId === null ? (
+            <Loader message="Loading product details..." />
+          ) : (
+            <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div>
+                <label className="field-label" htmlFor="name">
+                  Name <span className="text-red-400" aria-hidden="true">*</span>
+                </label>
+                <input
+                  id="name"
+                  className="input"
+                  type="text"
+                  name="name"
+                  placeholder="Product name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  disabled={formLoading}
+                />
+              </div>
 
-            <div>
-              <label className="field-label" htmlFor="sku">
-                SKU <span className="text-red-400" aria-hidden="true">*</span>
-              </label>
-              <input
-                id="sku"
-                className="input"
-                type="text"
-                name="sku"
-                placeholder="SKU-001"
-                value={formData.sku}
-                onChange={handleChange}
-                required
-              />
-            </div>
+              <div>
+                <label className="field-label" htmlFor="sku">
+                  SKU <span className="text-red-400" aria-hidden="true">*</span>
+                </label>
+                <input
+                  id="sku"
+                  className="input"
+                  type="text"
+                  name="sku"
+                  placeholder="SKU-001"
+                  value={formData.sku}
+                  onChange={handleChange}
+                  required
+                  disabled={formLoading}
+                />
+              </div>
 
-            <div>
-              <label className="field-label" htmlFor="price">
-                Price <span className="text-red-400" aria-hidden="true">*</span>
-              </label>
-              <input
-                id="price"
-                className="input"
-                type="number"
-                name="price"
-                placeholder="0"
-                min="0"
-                step="0.01"
-                value={formData.price}
-                onChange={handleChange}
-                required
-              />
-            </div>
+              <div>
+                <label className="field-label" htmlFor="price">
+                  Price <span className="text-red-400" aria-hidden="true">*</span>
+                </label>
+                <input
+                  id="price"
+                  className="input"
+                  type="number"
+                  name="price"
+                  placeholder="0"
+                  min="0"
+                  step="0.01"
+                  value={formData.price}
+                  onChange={handleChange}
+                  required
+                  disabled={formLoading}
+                />
+              </div>
 
-            <div>
-              <label className="field-label" htmlFor="quantity">
-                Quantity <span className="text-red-400" aria-hidden="true">*</span>
-              </label>
-              <input
-                id="quantity"
-                className="input"
-                type="number"
-                name="quantity"
-                placeholder="0"
-                min="0"
-                step="1"
-                value={formData.quantity}
-                onChange={handleChange}
-                required
-              />
-            </div>
+              <div>
+                <label className="field-label" htmlFor="quantity">
+                  Quantity <span className="text-red-400" aria-hidden="true">*</span>
+                </label>
+                <input
+                  id="quantity"
+                  className="input"
+                  type="number"
+                  name="quantity"
+                  placeholder="0"
+                  min="0"
+                  step="1"
+                  value={formData.quantity}
+                  onChange={handleChange}
+                  required
+                  disabled={formLoading}
+                />
+              </div>
 
-            <div className="sm:col-span-2 lg:col-span-4">
-              <button type="submit" className="btn-primary">
-                Add product
-              </button>
-            </div>
-          </form>
+              <div className="form-actions">
+                <button type="submit" className="btn-primary" disabled={formLoading}>
+                  {formLoading
+                    ? "Saving..."
+                    : editingId
+                      ? "Update product"
+                      : "Add product"}
+                </button>
+                {editingId && (
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={resetForm}
+                    disabled={formLoading}
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
+            </form>
+          )}
         </div>
       </section>
 
@@ -211,13 +272,22 @@ function Products() {
                   <li key={product.id} className="mobile-list-item">
                     <div className="mobile-list-row">
                       <p className="font-medium text-white break-words pr-2">{product.name}</p>
-                      <button
-                        type="button"
-                        className="btn-danger shrink-0"
-                        onClick={() => deleteProduct(product.id)}
-                      >
-                        Delete
-                      </button>
+                      <div className="flex shrink-0 gap-2">
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          onClick={() => startEdit(product.id)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-danger"
+                          onClick={() => deleteProduct(product.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                     <dl className="mobile-list-meta">
                       <div>
@@ -267,13 +337,22 @@ function Products() {
                           )}
                         </td>
                         <td className="text-right">
-                          <button
-                            type="button"
-                            className="btn-danger"
-                            onClick={() => deleteProduct(product.id)}
-                          >
-                            Delete
-                          </button>
+                          <div className="flex justify-end gap-2">
+                            <button
+                              type="button"
+                              className="btn-secondary"
+                              onClick={() => startEdit(product.id)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-danger"
+                              onClick={() => deleteProduct(product.id)}
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
