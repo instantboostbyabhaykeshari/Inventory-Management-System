@@ -111,7 +111,7 @@ The system allows businesses to manage:
 ## Clone Repository
 
 ```bash id="jlwm01"
-[git clone YOUR_GITHUB_REPO_LINK](https://github.com/instantboostbyabhaykeshari/Inventory-Management-System)
+https://github.com/instantboostbyabhaykeshari/Inventory-Management-System
 ```
 
 ## Run Using Docker
@@ -134,7 +134,7 @@ https://inventory-backend-b1za.onrender.com/docs
 
 ## Docker Hub
 
-YOUR_DOCKER_HUB_LINK
+https://hub.docker.com/repository/docker/abhayiiit/inventory-backend/general
 
 ---
 
