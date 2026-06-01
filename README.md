@@ -111,7 +111,7 @@ The system allows businesses to manage:
 ## Clone Repository
 
 ```bash id="jlwm01"
-git clone YOUR_GITHUB_REPO_LINK
+[git clone YOUR_GITHUB_REPO_LINK](https://github.com/instantboostbyabhaykeshari/Inventory-Management-System)
 ```
 
 ## Run Using Docker
@@ -126,11 +126,11 @@ docker compose up --build
 
 ## Frontend
 
-YOUR_FRONTEND_URL
+https://inventory-management-system-sage-delta.vercel.app/
 
 ## Backend
 
-YOUR_BACKEND_URL/docs
+https://inventory-backend-b1za.onrender.com/docs
 
 ## Docker Hub
 
@@ -140,4 +140,4 @@ YOUR_DOCKER_HUB_LINK
 
 # Author
 
-Sujeet Yadav
+Abhay Keshari
