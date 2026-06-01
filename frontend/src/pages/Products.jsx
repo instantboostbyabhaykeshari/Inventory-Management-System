@@ -47,12 +47,28 @@ function Products() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const name = formData.name.trim();
+    const sku = formData.sku.trim();
+    const price = Number(formData.price);
+    const quantity = Number(formData.quantity);
+
+    if (!name || !sku || formData.price === "" || formData.quantity === "") {
+      alert("Please fill in all required fields.");
+      return;
+    }
+
+    if (Number.isNaN(price) || price < 0 || Number.isNaN(quantity) || quantity < 0) {
+      alert("Price and quantity must be valid numbers (0 or greater).");
+      return;
+    }
+
     try {
 
       await api.post("/products/", {
-        ...formData,
-        price: Number(formData.price),
-        quantity: Number(formData.quantity)
+        name,
+        sku,
+        price,
+        quantity
       });
 
       setFormData({
@@ -102,7 +118,9 @@ function Products() {
         <div className="panel-body">
           <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div>
-              <label className="field-label" htmlFor="name">Name</label>
+              <label className="field-label" htmlFor="name">
+                Name <span className="text-red-400" aria-hidden="true">*</span>
+              </label>
               <input
                 id="name"
                 className="input"
@@ -111,11 +129,14 @@ function Products() {
                 placeholder="Product name"
                 value={formData.name}
                 onChange={handleChange}
+                required
               />
             </div>
 
             <div>
-              <label className="field-label" htmlFor="sku">SKU</label>
+              <label className="field-label" htmlFor="sku">
+                SKU <span className="text-red-400" aria-hidden="true">*</span>
+              </label>
               <input
                 id="sku"
                 className="input"
@@ -124,32 +145,43 @@ function Products() {
                 placeholder="SKU-001"
                 value={formData.sku}
                 onChange={handleChange}
+                required
               />
             </div>
 
             <div>
-              <label className="field-label" htmlFor="price">Price</label>
+              <label className="field-label" htmlFor="price">
+                Price <span className="text-red-400" aria-hidden="true">*</span>
+              </label>
               <input
                 id="price"
                 className="input"
                 type="number"
                 name="price"
                 placeholder="0"
+                min="0"
+                step="0.01"
                 value={formData.price}
                 onChange={handleChange}
+                required
               />
             </div>
 
             <div>
-              <label className="field-label" htmlFor="quantity">Quantity</label>
+              <label className="field-label" htmlFor="quantity">
+                Quantity <span className="text-red-400" aria-hidden="true">*</span>
+              </label>
               <input
                 id="quantity"
                 className="input"
                 type="number"
                 name="quantity"
                 placeholder="0"
+                min="0"
+                step="1"
                 value={formData.quantity}
                 onChange={handleChange}
+                required
               />
             </div>
 

@@ -52,9 +52,18 @@ function Customers() {
 
     e.preventDefault();
 
+    const full_name = formData.full_name.trim();
+    const email = formData.email.trim();
+    const phone = formData.phone.trim();
+
+    if (!full_name || !email || !phone) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+
     try {
 
-      await api.post("/customers/", formData);
+      await api.post("/customers/", { full_name, email, phone });
 
       setFormData({
         full_name: "",
@@ -105,7 +114,9 @@ function Customers() {
         <div className="panel-body">
           <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div>
-              <label className="field-label" htmlFor="full_name">Full name</label>
+              <label className="field-label" htmlFor="full_name">
+                Full name <span className="text-red-400" aria-hidden="true">*</span>
+              </label>
               <input
                 id="full_name"
                 className="input"
@@ -114,11 +125,14 @@ function Customers() {
                 placeholder="Jane Doe"
                 value={formData.full_name}
                 onChange={handleChange}
+                required
               />
             </div>
 
             <div>
-              <label className="field-label" htmlFor="email">Email</label>
+              <label className="field-label" htmlFor="email">
+                Email <span className="text-red-400" aria-hidden="true">*</span>
+              </label>
               <input
                 id="email"
                 className="input"
@@ -127,19 +141,23 @@ function Customers() {
                 placeholder="jane@example.com"
                 value={formData.email}
                 onChange={handleChange}
+                required
               />
             </div>
 
             <div>
-              <label className="field-label" htmlFor="phone">Phone</label>
+              <label className="field-label" htmlFor="phone">
+                Phone <span className="text-red-400" aria-hidden="true">*</span>
+              </label>
               <input
                 id="phone"
                 className="input"
-                type="text"
+                type="tel"
                 name="phone"
                 placeholder="+91 98765 43210"
                 value={formData.phone}
                 onChange={handleChange}
+                required
               />
             </div>
 
