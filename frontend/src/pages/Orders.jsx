@@ -154,7 +154,7 @@ function Orders() {
 
       <section className="panel">
         <div className="panel-header">
-          <h2 className="text-base font-semibold text-white">Create order</h2>
+          <h2 className="panel-title">Create order</h2>
         </div>
         <div className="panel-body">
           <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -218,7 +218,7 @@ function Orders() {
 
       <section className="panel">
         <div className="panel-header">
-          <h2 className="text-base font-semibold text-white">Order history</h2>
+          <h2 className="panel-title">Order history</h2>
           <p className="text-xs text-zinc-500 mt-0.5">{orders.length} total</p>
         </div>
         <div className="panel-body">
@@ -227,11 +227,11 @@ function Orders() {
           ) : orders.length === 0 ? (
             <p className="empty-state">No orders yet. Create one using the form above.</p>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-2.5">
               {orders.map((order) => (
                 <article
                   key={order.id}
-                  className="rounded-xl border border-white/10 bg-white/[0.02] p-4 sm:p-5 transition hover:border-white/15"
+                  className="rounded-lg border border-white/10 bg-white/[0.02] p-3 transition hover:border-white/15"
                 >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">

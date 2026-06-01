@@ -97,7 +97,7 @@ function Products() {
 
       <section className="panel">
         <div className="panel-header">
-          <h2 className="text-base font-semibold text-white">Add product</h2>
+          <h2 className="panel-title">Add product</h2>
         </div>
         <div className="panel-body">
           <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -164,7 +164,7 @@ function Products() {
 
       <section className="panel">
         <div className="panel-header">
-          <h2 className="text-base font-semibold text-white">Product list</h2>
+          <h2 className="panel-title">Product list</h2>
           <p className="text-xs text-zinc-500 mt-0.5">{products.length} total</p>
         </div>
         <div className="panel-body p-0">

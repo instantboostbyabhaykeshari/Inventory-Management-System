@@ -1,16 +1,35 @@
-# React + Vite
+# Frontend — Inventory Management
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Local development
 
-Currently, two official plugins are available:
+```bash
+npm install
+cp .env.example .env
+npm run dev
+```
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Set `VITE_API_URL` in `.env` to your backend URL (default: `http://127.0.0.1:8000`).
 
-## React Compiler
+## Deploy on Vercel
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Option A — Root directory `frontend` (recommended)
 
-## Expanding the ESLint configuration
+1. Import the repo in [Vercel](https://vercel.com).
+2. Set **Root Directory** to `frontend`.
+3. Framework preset: **Vite** (auto-detected).
+4. Add environment variable:
+   - `VITE_API_URL` = `https://inventory-backend-b1za.onrender.com` (or your backend URL)
+5. Deploy.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+`frontend/vercel.json` handles SPA routing (React Router).
+
+### Option B — Deploy from repo root
+
+Use the root `vercel.json` (builds `frontend/` automatically). Set `VITE_API_URL` in Vercel project settings.
+
+## Build
+
+```bash
+npm run build
+npm run preview
+```

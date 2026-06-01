@@ -8,6 +8,9 @@ const navItems = [
   { to: "/orders", label: "Orders" },
 ];
 
+const SIDEBAR_W = "w-56";
+const SIDEBAR_PL = "md:pl-56";
+
 function Layout() {
   const { pathname } = useLocation();
 
@@ -17,8 +20,10 @@ function Layout() {
 
   return (
     <div className="min-h-screen min-h-[100dvh]">
-      <aside className="hidden md:flex fixed top-0 left-0 z-40 h-screen w-64 flex-col border-r border-white/10 bg-[#0b0f1a]">
-        <div className="shrink-0 px-6 py-6 border-b border-white/10">
+      <aside
+        className={`hidden md:flex fixed top-0 left-0 z-40 h-screen ${SIDEBAR_W} flex-col border-r border-white/10 bg-[#0b0f1a]`}
+      >
+        <div className="shrink-0 px-5 py-5 border-b border-white/10">
           <Brand />
         </div>
 
@@ -28,12 +33,13 @@ function Layout() {
           ))}
         </nav>
 
-        <div className="shrink-0 px-6 py-4 border-t border-white/10">
+        <div className="shrink-0 px-5 py-4 border-t border-white/10">
           <p className="text-xs text-zinc-500">Stock & orders at a glance</p>
+          <p className="text-xs text-zinc-500">Made by Abhay Keshari</p>
         </div>
       </aside>
 
-      <div className="md:pl-64 min-h-screen min-h-[100dvh] flex flex-col">
+      <div className={`${SIDEBAR_PL} min-h-screen min-h-[100dvh] flex flex-col`}>
         <header className="md:hidden sticky top-0 z-30 border-b border-white/10 bg-[#0b0f1a]/95 backdrop-blur-xl px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
           <Brand compact />
         </header>
@@ -46,7 +52,7 @@ function Layout() {
           className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-[#0b0f1a]/95 backdrop-blur-xl"
           aria-label="Main navigation"
         >
-          <div className="grid grid-cols-4 gap-0 px-1 pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+          <div className="grid grid-cols-4 px-1 pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
             {navItems.map((item) => (
               <BottomNavLink key={item.to} item={item} />
             ))}
@@ -59,17 +65,13 @@ function Layout() {
 
 function Brand({ compact = false }) {
   return (
-    <div className={`flex items-center gap-3 ${compact ? "" : ""}`}>
-      <div className="h-9 w-9 shrink-0 rounded-lg bg-gradient-to-br from-blue-500 to-emerald-400 flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-blue-500/20">
+    <div className="flex items-center gap-3 min-w-0">
+      <div className="h-9 w-9 shrink-0 rounded-lg bg-gradient-to-br from-blue-500 to-emerald-400 flex items-center justify-center text-xs font-bold text-white">
         IM
       </div>
       <div className="min-w-0">
-        <p className={`font-semibold text-white tracking-tight truncate ${compact ? "text-sm" : "text-sm"}`}>
-          Inventory
-        </p>
-        <p className="text-xs text-zinc-500 truncate">
-          {compact ? "Management System" : "Management"}
-        </p>
+        <p className="text-sm font-semibold text-white tracking-tight truncate">Inventory</p>
+        <p className="text-xs text-zinc-500 truncate">Management</p>
       </div>
     </div>
   );
@@ -100,8 +102,8 @@ function BottomNavLink({ item }) {
       to={item.to}
       end={item.end}
       className={({ isActive }) =>
-        `flex flex-col items-center justify-center gap-0.5 rounded-lg py-2 min-h-[52px] text-[10px] sm:text-xs font-medium transition-colors touch-manipulation ${
-          isActive ? "text-blue-400" : "text-zinc-500 active:text-zinc-300"
+        `flex flex-col items-center justify-center gap-1 rounded-lg py-2 min-h-[52px] text-xs font-medium transition-colors touch-manipulation ${
+          isActive ? "text-blue-400" : "text-zinc-500"
         }`
       }
     >
@@ -121,7 +123,7 @@ function BottomNavLink({ item }) {
   );
 }
 
-function NavIcon({ route, className = "h-4 w-4 opacity-70" }) {
+function NavIcon({ route, className = "h-4 w-4 opacity-80 shrink-0" }) {
   if (route === "/") {
     return (
       <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

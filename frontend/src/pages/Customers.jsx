@@ -100,7 +100,7 @@ function Customers() {
 
       <section className="panel">
         <div className="panel-header">
-          <h2 className="text-base font-semibold text-white">Add customer</h2>
+          <h2 className="panel-title">Add customer</h2>
         </div>
         <div className="panel-body">
           <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -154,7 +154,7 @@ function Customers() {
 
       <section className="panel">
         <div className="panel-header">
-          <h2 className="text-base font-semibold text-white">Customer list</h2>
+          <h2 className="panel-title">Customer list</h2>
           <p className="text-xs text-zinc-500 mt-0.5">{customers.length} total</p>
         </div>
         <div className="panel-body p-0">

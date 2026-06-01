@@ -76,10 +76,10 @@ function Dashboard() {
         {statCards.map((card) => (
           <div
             key={card.label}
-            className={`panel p-5 bg-gradient-to-br ${card.accent}`}
+            className={`stat-card bg-gradient-to-br ${card.accent}`}
           >
-            <p className="text-sm text-zinc-400">{card.label}</p>
-            <p className="mt-2 text-3xl font-semibold text-white tabular-nums">{card.value}</p>
+            <p className="stat-card-label">{card.label}</p>
+            <p className="stat-card-value">{card.value}</p>
           </div>
         ))}
       </div>
@@ -87,7 +87,7 @@ function Dashboard() {
       <section className="panel">
         <div className="panel-header flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-base font-semibold text-white">Low stock alerts</h2>
+            <h2 className="panel-title">Low stock alerts</h2>
             <p className="text-xs text-zinc-500 mt-0.5">Products with quantity below 5</p>
           </div>
           {stats.lowStockProducts.length > 0 && (
